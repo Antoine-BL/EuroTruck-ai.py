@@ -5,40 +5,56 @@ import numpy as np
 
 PCT_TEST = 0.2
 
+
 def main():
-    path = os.path.join(os.path.realpath('data\\unsorted'), 'session-{}.npy')
-    train_path = os.path.join(os.path.realpath('data\\train'), 'session-{}.npy')
-    test_path = os.path.join(os.path.realpath('data\\test'), 'session-{}.npy')
+    split_data()
+
+
+def split_data():
+    data_path = os.path.realpath('..\\data')
+    unsorted_path = os.path.join(data_path, 'unsorted', 'session-{}.npy')
+    train_path = os.path.join(data_path, 'train', 'session-{}.npy')
+    test_path = os.path.join(data_path, 'test', 'session-{}.npy')
     train_data = []
     test_data = []
+    train_set = []
+    test_set = []
 
-    file_num = 1
-    train_file_num = 1
-    test_file_num = 1
+    read_file_num = 1
+    write_file_num = 1
 
-    data_file = path.format(file_num)
+    data_file = unsorted_path.format(read_file_num)
     while os.path.isfile(data_file):
-        file_num += 1
+        read_file_num += 1
         data_set = np.load(data_file)
-        print(file_num)
+        print(read_file_num)
         for data_point in data_set:
             if random() <= PCT_TEST:
                 test_data.append(data_point)
-                if len(test_data) % 500 == 0:
-                    np.save(test_path.format(test_file_num), test_data)
+                if len(test_data) >= 500:
+                    np.save(test_path.format(write_file_num), test_data)
                     test_data = []
-                    test_file_num += 1
+                    test_set.append(write_file_num)
+                    write_file_num += 1
             else:
                 train_data.append(data_point)
-                if len(train_data) % 500 == 0:
-                    np.save(train_path.format(train_file_num), train_data)
+                if len(train_data) >= 500:
+                    np.save(train_path.format(write_file_num), train_data)
                     train_data = []
-                    train_file_num += 1
+                    train_set.append(write_file_num)
+                    write_file_num += 1
 
-        data_file = path.format(file_num)
+        data_file = unsorted_path.format(read_file_num)
 
-    np.save(test_path.format(test_file_num), test_data)
-    np.save(train_path.format(train_file_num), train_data)
+    np.save(test_path.format(write_file_num), test_data)
+    test_set.append(write_file_num)
+
+    write_file_num += 1
+    np.save(train_path.format(write_file_num), train_data)
+    train_set.append(write_file_num)
+
+    np.save(os.path.join(data_path, 'test-set.npy'), test_set)
+    np.save(os.path.join(data_path, 'train-set.npy'), train_set)
 
 
 if __name__ == '__main__':

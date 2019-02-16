@@ -3,14 +3,20 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+DATA_PATH = os.path.realpath('..\\data')
+
 
 def main():
-    plot_folder_data('data\\unsorted', 'pre-sorted inputs')
-    plot_folder_data('data\\train', 'training inputs')
-    plot_folder_data('data\\test', 'validation inputs')
+    plot_all()
 
 
-def plot_folder_data(rel_path, title):
+def plot_all():
+    plot_unsorted_data('..\\data\\unsorted', 'unsorted inputs')
+    plot_training_set('..\\data\\train', 'train-set.npy', 'training inputs')
+    plot_training_set('..\\data\\test', 'test-set.npy', 'validation inputs')
+
+
+def plot_unsorted_data(rel_path, title):
     file_num = 1
     path = os.path.join(os.path.realpath(rel_path), 'session-{}.npy')
     input_data = []
@@ -24,10 +30,30 @@ def plot_folder_data(rel_path, title):
         for data_point in data_set:
             input_data.append(data_point[1][1])
 
-    plt.hist(input_data, np.arange(-1, 1, 0.05))
+    plt.hist(input_data, np.arange(-1, 1.05, 0.05))
     plt.title(title)
-    plt.xlabel('Occurrences')
-    plt.ylabel('steering angle')
+    plt.xlabel('steering angle')
+    plt.ylabel('Occurrences')
+    plt.show()
+
+
+def plot_training_set(rel_path, set_file, title):
+    path = os.path.join(os.path.realpath(rel_path), 'session-{}.npy')
+    set_path = os.path.join(DATA_PATH, set_file)
+    set = np.load(set_path)
+    input_data = []
+
+    for file_num in set:
+        data_file = path.format(file_num)
+        data_set = np.load(data_file)
+        print(file_num)
+        for data_point in data_set:
+            input_data.append(data_point[1][1])
+
+    plt.hist(input_data, np.arange(-1, 1.05, 0.05))
+    plt.title(title)
+    plt.xlabel('steering angle')
+    plt.ylabel('Occurrences')
     plt.show()
 
 

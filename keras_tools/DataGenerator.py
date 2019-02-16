@@ -1,17 +1,21 @@
+import cv2
+
 import numpy as np
 from tensorflow.python import keras
 
+IMG_INDEX = 0
+INPUT_INDEX = 1
+JOY_INDEX = 1
+
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, list_ids, labels, batch_size=32, dim=(32, 32, 32), n_channels=1,
-                 n_classes=10, shuffle=True):
+    def __init__(self, list_ids, batch_size=32, dim=(32, 32, 32), shuffle=True):
         'Initialization'
         self.dim = dim
         self.batch_size = batch_size
-        self.labels = labels
         self.list_IDs = list_ids
-        self.n_channels = n_channels
-        self.n_classes = n_classes
+        self.n_channels = 1
+        self.n_classes = 1
         self.shuffle = shuffle
         self.indexes = None
         self.on_epoch_end()
@@ -28,15 +32,31 @@ class DataGenerator(keras.utils.Sequence):
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty(self.batch_size, dtype=int)
 
+        (dim_y, dim_x) = self.dim
+        print('batch')
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            # Store sample
-            X[i,] = np.load('data/' + ID + '.npy')
+            print('sample')
+            (file_name, index) = self.__sep_ID(ID)
 
-            # Store class
-            y[i] = self.labels[ID]
+            # Normalize img
+            sample = np.load('data/' + file_name + '.npy')[int(index)]
+            img = sample[IMG_INDEX]
+            img = cv2.resize(img, (dim_x, dim_y))
+            img = img.reshape(dim_y, dim_x, 1)
 
-        return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
+            # Normalize label
+            label = (sample[INPUT_INDEX][JOY_INDEX] + 1) / 2.0
+            X[i, ] = img
+            y[i] = label
+
+        return X, y
+
+    def __sep_ID(self, ID: str):
+        ID_parts = ID.split('|')
+        file_name = ID_parts[0]
+        index = ID_parts[1]
+        return file_name, index
 
     def __len__(self):
         'Denotes the number of batches per epoch'
