@@ -23,8 +23,6 @@ class DataGenerator(keras.utils.Sequence):
     def on_epoch_end(self):
         'Updates indexes after each epoch'
         self.indexes = np.arange(len(self.list_IDs))
-        if self.shuffle:
-            np.random.shuffle(self.indexes)
 
     def __data_generation(self, list_IDs_temp):
         'Generates data containing batch_size samples'  # X : (n_samples, *dim, n_channels)
@@ -33,16 +31,24 @@ class DataGenerator(keras.utils.Sequence):
         y = np.empty(self.batch_size, dtype=int)
 
         (dim_y, dim_x) = self.dim
-        print('batch')
         # Generate data
+        old_file = ''
+        data_set = None
+        print('Batch')
+        pos_x = 128
+        pos_y = 147
         for i, ID in enumerate(list_IDs_temp):
-            print('sample')
             (file_name, index) = self.__sep_ID(ID)
 
+            if old_file != file_name:
+                data_set = np.load('data/' + file_name + '.npy')
+
+
+
             # Normalize img
-            sample = np.load('data/' + file_name + '.npy')[int(index)]
+            sample = data_set[int(index)]
             img = sample[IMG_INDEX]
-            img = cv2.resize(img, (dim_x, dim_y))
+            img = img[pos_y:pos_y + dim_y, pos_x:pos_x + dim_x]
             img = img.reshape(dim_y, dim_x, 1)
 
             # Normalize label

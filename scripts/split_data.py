@@ -12,7 +12,7 @@ def main():
 
 def split_data():
     data_path = os.path.realpath('..\\data')
-    unsorted_path = os.path.join(data_path, 'unsorted', 'session-{}.npy')
+    unsorted_path = os.path.join(data_path, 'balanced', 'session-{}.npy')
     train_path = os.path.join(data_path, 'train', 'session-{}.npy')
     test_path = os.path.join(data_path, 'test', 'session-{}.npy')
     train_data = []

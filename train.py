@@ -1,19 +1,24 @@
 import os
+import threading
+import time
+from datetime import date, datetime
+from threading import Timer
 
 import numpy as np
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Conv2D, Flatten, Dense
+from tensorflow.python.keras.optimizers import Adam
 
 from keras_tools.DataGenerator import DataGenerator
 
 DATA_PATH = os.path.realpath('.\\data')
-
+MODEL_NAME = 'ROI-Full-NN-balanced-50e'
 
 def main():
     print('generating partitions...')
     partition = generate_partition()
-    dim_x = 160
-    dim_y = 90
+    dim_x = 200
+    dim_y = 66
 
     params = {
         'dim': (dim_y, dim_x),
@@ -29,26 +34,43 @@ def main():
     model = Sequential()
 
     print('defining conv layers...')
-    model.add(Conv2D(8, kernel_size=5, strides=(2, 2), activation='relu', input_shape=(dim_y, dim_x, 1)))
-    model.add(Conv2D(12, kernel_size=5, strides=(2, 2), activation='relu'))
-    model.add(Conv2D(16, kernel_size=3, strides=(2, 2), activation='relu'))
-    model.add(Conv2D(24, kernel_size=3, strides=(9, 2), activation='relu'))
+    model.add(Conv2D(1, kernel_size=(5,5), strides=(2, 2), activation='relu', input_shape=(dim_y, dim_x, 1)))
+    model.add(Conv2D(24, kernel_size=(5,5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(36, kernel_size=(5,5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(48, kernel_size=(3,3), strides=(1, 1), activation='relu'))
+    model.add(Conv2D(64, kernel_size=(3,3), strides=(1, 1), activation='relu'))
+
+    print('adding flatten layer...')
     model.add(Flatten())
+
     print('defining network layers...')
-    model.add(Dense(582))
+    model.add(Dense(1164))
+    model.add(Dense(100))
     model.add(Dense(50))
-    model.add(Dense(25))
-    model.add(Dense(1, activation='softmax'))
+    model.add(Dense(1))
 
     print('compiling model...')
-    model.compile(optimizer='sgd', loss='mean_squared_error', metrics=['mse'])
+    optimizer = Adam(lr=0.005)
+    model.compile(optimizer=optimizer, loss='mse', metrics=['mse'])
 
     print('training model...')
     model.fit_generator(generator=training_generator,
                         validation_data=testing_generator,
                         use_multiprocessing=True,
+                        steps_per_epoch=len(partition['train']) // params['batch_size'],
+                        validation_steps=len(partition['test']) // params['batch_size'],
                         workers=6,
-                        epochs=3)
+                        epochs=10)
+
+    print('saving model...')
+    modelpath = os.path.realpath('models/{}.h5'.format(MODEL_NAME if MODEL_NAME != '' else datetime.now()))
+    model_dir = os.path.dirname(modelpath)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    model.save(modelpath)
+    print('model saved to {}...'.format(modelpath))
+
+    print('exiting...')
 
 
 def generate_partition():

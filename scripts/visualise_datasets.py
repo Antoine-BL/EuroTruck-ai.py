@@ -11,7 +11,8 @@ def main():
 
 
 def plot_all():
-    plot_unsorted_data('..\\data\\unsorted', 'unsorted inputs')
+    plot_unsorted_data('..\\data\\balanced', 'balanced data')
+    # plot_unsorted_data('..\\data\\unsorted', 'unsorted inputs')
     plot_training_set('..\\data\\train', 'train-set.npy', 'training inputs')
     plot_training_set('..\\data\\test', 'test-set.npy', 'validation inputs')
 
