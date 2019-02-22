@@ -43,8 +43,6 @@ class DataGenerator(keras.utils.Sequence):
             if old_file != file_name:
                 data_set = np.load('data/' + file_name + '.npy')
 
-
-
             # Normalize img
             sample = data_set[int(index)]
             img = sample[IMG_INDEX]

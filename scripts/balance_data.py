@@ -47,7 +47,7 @@ def proportions_per_bin(path, bin_size, total_nb_samples):
 
         data = np.load(data_file)
         for data_point in data:
-            bin_nb = round((data_point[1][1] + 1) / bin_size)
+            bin_nb = int(round((data_point[1][1] + 1) / bin_size, 0))
             bins[bin_nb - 1] += 1
 
     return bins
@@ -70,7 +70,7 @@ def balance_and_save(bins, path, total_nb_samples, bin_size, write_path):
 
         data = np.load(data_file)
         for data_point in data:
-            bin_nb = round((data_point[1][1] + 1) / bin_size)
+            bin_nb = int(round((data_point[1][1] + 1) / bin_size))
 
             if random.randrange(0, 10000) / 10000 < bin_prob[bin_nb - 1]:
                 bal_data.append(data_point)

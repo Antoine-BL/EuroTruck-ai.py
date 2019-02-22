@@ -10,9 +10,11 @@ from tensorflow.python.keras.layers import Conv2D, Flatten, Dense
 from tensorflow.python.keras.optimizers import Adam
 
 from keras_tools.DataGenerator import DataGenerator
+from keras_tools.Model import create_model
 
 DATA_PATH = os.path.realpath('.\\data')
-MODEL_NAME = 'ROI-Full-NN-balanced-50e'
+MODEL_NAME = 'Shuffle-BN-30e'
+
 
 def main():
     print('generating partitions...')
@@ -30,27 +32,10 @@ def main():
     training_generator = DataGenerator(partition['train'], **params)
     testing_generator = DataGenerator(partition['test'], **params)
 
-    print('defining model...')
-    model = Sequential()
-
-    print('defining conv layers...')
-    model.add(Conv2D(1, kernel_size=(5,5), strides=(2, 2), activation='relu', input_shape=(dim_y, dim_x, 1)))
-    model.add(Conv2D(24, kernel_size=(5,5), strides=(2, 2), activation='relu'))
-    model.add(Conv2D(36, kernel_size=(5,5), strides=(2, 2), activation='relu'))
-    model.add(Conv2D(48, kernel_size=(3,3), strides=(1, 1), activation='relu'))
-    model.add(Conv2D(64, kernel_size=(3,3), strides=(1, 1), activation='relu'))
-
-    print('adding flatten layer...')
-    model.add(Flatten())
-
-    print('defining network layers...')
-    model.add(Dense(1164))
-    model.add(Dense(100))
-    model.add(Dense(50))
-    model.add(Dense(1))
+    model = create_model()
 
     print('compiling model...')
-    optimizer = Adam(lr=0.005)
+    optimizer = Adam(lr=0.001)
     model.compile(optimizer=optimizer, loss='mse', metrics=['mse'])
 
     print('training model...')
@@ -60,7 +45,7 @@ def main():
                         steps_per_epoch=len(partition['train']) // params['batch_size'],
                         validation_steps=len(partition['test']) // params['batch_size'],
                         workers=6,
-                        epochs=10)
+                        epochs=30)
 
     print('saving model...')
     modelpath = os.path.realpath('models/{}.h5'.format(MODEL_NAME if MODEL_NAME != '' else datetime.now()))
