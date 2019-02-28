@@ -1,9 +1,12 @@
 from __future__ import print_function
 
+import math
 import os
 
 import cv2
 import time
+
+from tensorflow.python.keras.models import load_model
 
 import pyvjoy
 
@@ -11,11 +14,15 @@ import numpy as np
 from mss import mss
 from tensorflow.python.keras import Sequential
 
+from keras_tools import Model
 from keras_tools.Model import create_model
 from pyvjoy import VJoyDevice
 from threading_ext.KeyboardTracker import KeyboardTracker
 
+import tensorflow as tf
+
 UINT8_MAXVALUE = 32768
+MODEL_NAME = 'models/checkpoints/weights48-190.8600.hdf5'
 
 
 def main():
@@ -24,7 +31,7 @@ def main():
     keyboard_tracker_thread.start()
 
     print('Loading model...')
-    model = load_model()
+    model = init_model()
 
     holding_down = False
     paused = True
@@ -52,10 +59,10 @@ def main():
 
             if not paused:
                 monitor = {"top": 40, "left": 0, "width": 1024, "height": 728}
-                dim_x = 200
-                dim_y = 66
-                pos_x = 147
-                pos_y = 128
+                dim_x = 280
+                dim_y = 100
+                pos_x = 100
+                pos_y = 130
 
                 screen = np.asarray(sct.grab(monitor))
                 screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
@@ -71,25 +78,29 @@ def main():
                 prediction = model.predict(screen)
                 print(prediction)
                 act_on_prediction(prediction, j)
+            else:
+                j.data.wAxisX = 16383
+                j.update()
 
             time.sleep(0.1)
 
 
-def load_model() -> Sequential:
-    model_path = os.path.realpath('models/ROI-Full-NN-balanced-50e.h5')
-
-    model = create_model()
+def init_model() -> Sequential:
+    model_path = os.path.realpath(MODEL_NAME)
+    dim_x = 280
+    dim_y = 100
+    model = create_model(dim_x, dim_y)
     model.load_weights(model_path)
 
     return model
 
 
 def act_on_prediction(prediction, vjd: VJoyDevice):
-    adjusted_val = 1 + prediction[0][0] * (UINT8_MAXVALUE - 1)
+    adjusted_val = 1 + ((prediction[0][0] + math.pi / 2) / math.pi *10) * (UINT8_MAXVALUE - 1)
     adjusted_val = int(round(adjusted_val, 0))
-    vjd.set_axis(pyvjoy.HID_USAGE_X, 0x1)
+    print(adjusted_val)
+    vjd.data.wAxisX = adjusted_val
     vjd.update()
-    print(prediction[0][0])
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+import math
+
 import cv2
 
 import numpy as np
@@ -34,9 +36,8 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         old_file = ''
         data_set = None
-        print('Batch')
-        pos_x = 128
-        pos_y = 147
+        pos_x = 100
+        pos_y = 130
         for i, ID in enumerate(list_IDs_temp):
             (file_name, index) = self.__sep_ID(ID)
 
@@ -50,9 +51,12 @@ class DataGenerator(keras.utils.Sequence):
             img = img.reshape(dim_y, dim_x, 1)
 
             # Normalize label
-            label = (sample[INPUT_INDEX][JOY_INDEX] + 1) / 2.0
+            label = sample[INPUT_INDEX][JOY_INDEX]
+            normalized_label = (label + 1) / 2.0
+            normalized_label *= math.pi
+            normalized_label -= math.pi / 2
             X[i, ] = img
-            y[i] = label
+            y[i] = normalized_label
 
         return X, y
 

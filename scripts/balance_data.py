@@ -56,10 +56,10 @@ def proportions_per_bin(path, bin_size, total_nb_samples):
 def balance_and_save(bins, path, total_nb_samples, bin_size, write_path):
     write_file_num = 1
 
-    fifth_smallest = max(nsmallest(10, bins))
+    second_smallest = max(nsmallest(4, bins))
     bin_prob = []
     for nb in bins:
-        bin_prob.append(fifth_smallest / nb)
+        bin_prob.append(second_smallest / nb)
 
     bal_data = []
     print('Balancing data')

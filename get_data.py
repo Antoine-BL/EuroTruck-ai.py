@@ -69,7 +69,6 @@ def main():
         time.sleep(0.1)
 
 
-
 def find_session_num(data_path):
     session_number = 1
     while True:

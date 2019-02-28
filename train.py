@@ -1,30 +1,30 @@
 import os
-import threading
-import time
-from datetime import date, datetime
-from threading import Timer
+import tensorflow as tf
+from datetime import datetime
 
 import numpy as np
-from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Conv2D, Flatten, Dense
+from tensorflow.python.keras import callbacks
+from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.optimizers import Adam
 
 from keras_tools.DataGenerator import DataGenerator
 from keras_tools.Model import create_model
 
 DATA_PATH = os.path.realpath('.\\data')
-MODEL_NAME = 'Shuffle-BN-30e'
+START_MODEL_NAME = 'PNet-atan-100e'
+MODEL_NAME = 'PNet-atan-150e'
+MODEL_FORMAT = 'models/{}.h5'
 
 
 def main():
     print('generating partitions...')
     partition = generate_partition()
-    dim_x = 200
-    dim_y = 66
+    dim_x = 280
+    dim_y = 100
 
     params = {
         'dim': (dim_y, dim_x),
-        'batch_size': 50,
+        'batch_size': 100,
         'shuffle': True
     }
 
@@ -32,11 +32,18 @@ def main():
     training_generator = DataGenerator(partition['train'], **params)
     testing_generator = DataGenerator(partition['test'], **params)
 
-    model = create_model()
+    if START_MODEL_NAME != '':
+        print('Loading model...')
+        model = load_model(MODEL_FORMAT.format(START_MODEL_NAME))
+    else:
+        print('compiling model...')
+        model = create_model(dim_x, dim_y)
+        optimizer = Adam(lr=0.00001)
+        model.compile(optimizer=optimizer, loss='mse', metrics=['mse'])
 
-    print('compiling model...')
-    optimizer = Adam(lr=0.001)
-    model.compile(optimizer=optimizer, loss='mse', metrics=['mse'])
+    cpoint = callbacks.ModelCheckpoint('.\\models\\checkpoints\\weights{epoch:02d}-{val_loss:.4f}.hdf5',
+                                       monitor='val_loss', verbose=0,
+                                       save_best_only=True, save_weights_only=False)
 
     print('training model...')
     model.fit_generator(generator=training_generator,
@@ -44,11 +51,12 @@ def main():
                         use_multiprocessing=True,
                         steps_per_epoch=len(partition['train']) // params['batch_size'],
                         validation_steps=len(partition['test']) // params['batch_size'],
-                        workers=6,
-                        epochs=30)
+                        workers=4,
+                        epochs=50,
+                        callbacks=[cpoint])
 
     print('saving model...')
-    modelpath = os.path.realpath('models/{}.h5'.format(MODEL_NAME if MODEL_NAME != '' else datetime.now()))
+    modelpath = os.path.realpath(MODEL_FORMAT.format(MODEL_NAME if MODEL_NAME != '' else datetime.now()))
     model_dir = os.path.dirname(modelpath)
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)

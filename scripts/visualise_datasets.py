@@ -29,9 +29,9 @@ def plot_unsorted_data(rel_path, title):
         data_file = path.format(file_num)
         print(file_num)
         for data_point in data_set:
-            input_data.append(data_point[1][1])
+            input_data.append((data_point[1][1] + 1) / 2)
 
-    plt.hist(input_data, np.arange(-1, 1.05, 0.05))
+    plt.hist(input_data, np.arange(0, 1.05, 0.025))
     plt.title(title)
     plt.xlabel('steering angle')
     plt.ylabel('Occurrences')
@@ -49,9 +49,9 @@ def plot_training_set(rel_path, set_file, title):
         data_set = np.load(data_file)
         print(file_num)
         for data_point in data_set:
-            input_data.append(data_point[1][1])
+            input_data.append((data_point[1][1] + 1) / 2)
 
-    plt.hist(input_data, np.arange(-1, 1.05, 0.05))
+    plt.hist(input_data, np.arange(0, 1.05, 0.025))
     plt.title(title)
     plt.xlabel('steering angle')
     plt.ylabel('Occurrences')

@@ -1,3 +1,4 @@
+import cv2
 import os
 
 import numpy as np
@@ -5,32 +6,47 @@ from PIL import Image
 
 
 def main():
-    plot_all()
+    average_img_3()
 
 
-def plot_all():
-    file_num = 100
-    path = os.path.join(os.path.realpath('..\\data\\unsorted'), 'session-{}.npy')
-
-    data_file = path.format(file_num)
-    data = np.load(data_file)
-
-    average_img_3(data)
-
-
-def average_img_3(data):
+def average_img_3():
     # Alternative method using numpy mean function
-    pos_x = 128
-    pos_y = 147
+    dim_x = 280
+    dim_y = 100
+    pos_x = 100
+    pos_y = 130
+    samples_per_file = 500
 
-    dim_x = 200
-    dim_y = 66
+    path = '..\\data\\balanced\\session-{}.npy'
 
-    images = np.array([dpoint[0] for dpoint in data])
-    arr = np.array(np.mean(images, axis=0), dtype=np.uint8)
-    arr = arr[pos_y:pos_y + dim_y, pos_x:pos_x + dim_x]
-    out = Image.fromarray(arr)
-    out.save('Average.png')
+    file_count = 1
+    while os.path.isfile(path.format(file_count)):
+        file_count += 1
+
+    write_file_num = 1
+
+    num_samples = file_count * samples_per_file
+    im_mean = np.zeros(shape=(270, 480), dtype='float32')
+    write_data_file = path.format(write_file_num)
+    while os.path.isfile(write_data_file):
+        print(write_file_num)
+        data = np.load(write_data_file)
+
+        for data_point in data:
+            im_data = data_point[0]
+            # im_data = im_data[pos_y:pos_y + dim_y, pos_x:pos_x + dim_x]
+            im_mean = np.add(im_mean, np.array(im_data / num_samples))
+
+        write_file_num += 1
+        write_data_file = path.format(write_file_num)
+
+    out = Image.fromarray(im_mean)
+    out.show('Average')
+
+    im_example = np.load(path.format(write_file_num - 1))[0][0]
+    np.flipud(im_example)
+    out2 = Image.fromarray(im_example - im_mean)
+    out2.show('Minus mean')
 
 
 if __name__ == "__main__":
