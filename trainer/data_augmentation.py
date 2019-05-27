@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from trainer.util import IMGS_PATH
+
 
 def h_flip_image(img):
     return cv2.flip(img, 1)
@@ -74,9 +76,6 @@ def augment_image(img, st_angle, p=1.0):
     return aug_img, st_angle
 
 
-IMG_PATH = r'D:\Documents\School work\Cegep\Session 6\EuroTruck-ai.py\data-png\features\img-{}.png'
-
-
 def generate_images(ds, target_dimensions, batch_size=100,
                     data_aug_pct=0.8, aug_likelihood=0.5, st_angle_threshold=0.05, neutral_drop_pct=0.25):
     """
@@ -99,7 +98,7 @@ def generate_images(ds, target_dimensions, batch_size=100,
             if abs(st_angle) < st_angle_threshold and np.random.random_sample() <= neutral_drop_pct:
                 continue
 
-            im_frame = Image.open(IMG_PATH.format(im_index))
+            im_frame = Image.open(IMGS_PATH.format(im_index))
             im_data = np.array(im_frame)
 
             im_data, st_angle = \
