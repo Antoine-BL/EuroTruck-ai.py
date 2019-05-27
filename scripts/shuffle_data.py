@@ -1,9 +1,9 @@
 import os
 import shutil
-from collections import Iterable
-from os import path
-
 import numpy as np
+
+
+SAMPLES_PER_FILE = 100
 
 
 def main():
@@ -66,11 +66,11 @@ def shuffle_files(file_nums: list, dest_p, src_p):
         np.random.shuffle(all_data)
 
         write_file = output_path.format(write_file_num)
-        np.save(write_file, all_data[:500])
+        np.save(write_file, all_data[:SAMPLES_PER_FILE])
         write_file_num += 1
 
         write_file = output_path.format(write_file_num)
-        np.save(write_file, all_data[-500:])
+        np.save(write_file, all_data[-SAMPLES_PER_FILE:])
         write_file_num += 1
 
         print('File {} of {} ({}%)'.format(write_file_num, total_files, round(write_file_num / total_files * 100, 1)))

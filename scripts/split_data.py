@@ -6,6 +6,7 @@ import random
 import numpy as np
 
 PCT_TEST = 0.2
+SAMPLES_PER_FILE = 100
 
 
 def main():
@@ -54,10 +55,10 @@ class Saver:
 
         with self.lock:
 
-            if len(self.test_set) >= 500:
+            if len(self.test_set) >= SAMPLES_PER_FILE:
                 self.file_counter += 1
-                files_to_save = np.array(self.test_set[:500])
-                del self.test_set[:500]
+                files_to_save = np.array(self.test_set[:SAMPLES_PER_FILE])
+                del self.test_set[:SAMPLES_PER_FILE]
 
                 np.save(self.test_path.format(self.file_counter), files_to_save)
                 self.test_nums.append(self.file_counter)
@@ -66,10 +67,10 @@ class Saver:
         self.train_set.append(data)
 
         with self.lock:
-            if len(self.train_set) >= 500:
+            if len(self.train_set) >= SAMPLES_PER_FILE:
                 self.file_counter += 1
-                files_to_save = np.array(self.train_set[:500])
-                del self.train_set[:500]
+                files_to_save = np.array(self.train_set[:SAMPLES_PER_FILE])
+                del self.train_set[:SAMPLES_PER_FILE]
 
                 np.save(self.train_path.format(self.file_counter), files_to_save)
                 self.train_nums.append(self.file_counter)
