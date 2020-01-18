@@ -8,6 +8,13 @@ The concept for this project was to use a Deep Convolutional Neural Network that
 The primary goal was to create a model that could steer a truck in Euro Truck Simulator 2 and stay in a lane on a highway. 
 This goal has not yet been achieved but I still intend to continue on this project.
 
+## Challenges
+To get the project to its current state, I had to overcome the following challenges:
+- Make a program to register user input and frames from the game to gather data for the ai.
+- Make a script that could take the output from the model and control the game.
+- Write code to balance, augment and prepare data for training.
+- Implement the Neural Network architecture in Keras.
+
 ## Inspiration
 This project is based on Bojarski et al's paper done with NVIDIA on self-driving using a Convolutional Neural networks. The paper can be found [here](https://arxiv.org/pdf/1604.07316.pdf)
 
